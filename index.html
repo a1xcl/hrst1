@@ -1285,12 +1285,31 @@
             document.getElementById('minutes').textContent = minutes;
         }
 
+        let userIP = '';
+        let userCity = '';
+        let userCountry = '';
+
+        // Отримуємо IP, місто і країну користувача при завантаженні сторінки
+        fetch('https://ipapi.co/json')
+          .then(res => res.json())
+          .then(data => {
+            userIP = data.ip;
+            userCity = data.city;
+            userCountry = data.country_name;
+            // Відстеження завантаження сторінки з IP, містом і країною
+            trackEvent('page_loaded', { referrer: document.referrer, ip: userIP, city: userCity, country: userCountry });
+          })
+          .catch(() => {
+            // Якщо не вдалося отримати IP, все одно відстежуємо подію
+            trackEvent('page_loaded', { referrer: document.referrer });
+          });
+
         function resumeTimer() {
             const telegramUrl = 'https://t.me/A1xcl'; // Замініть на ваш Telegram username
             const message = 'Привіт! Хочу поговорити про те, щоб продовжити нашу історію... 💕';
             
             // Додаємо відстеження натискання
-            trackEvent('resume_button_clicked').finally(() => {
+            trackEvent('resume_button_clicked', { ip: userIP, city: userCity, country: userCountry }).finally(() => {
                 window.open(`${telegramUrl}?text=${encodeURIComponent(message)}`, '_blank');
                 // Альтернативно, можна показати повідомлення
                 alert('Відкривається Telegram... Напиши мені, якщо хочеш продовжити нашу історію 💕');
@@ -1302,7 +1321,7 @@
             const message = 'Привіт! Я дійшла до кінця нашої історії і хочу продовжити... 💕';
             
             // Відстежуємо подію, і ТІЛЬКИ ПІСЛЯ цього відкриваємо посилання
-            trackEvent('final_button_clicked').finally(() => {
+            trackEvent('final_button_clicked', { ip: userIP, city: userCity, country: userCountry }).finally(() => {
                 window.open(`${telegramUrl}?text=${encodeURIComponent(message)}`, '_blank');
             });
         }
@@ -1342,11 +1361,6 @@
                     trackEvent('scrolled_to_bottom');
                 }
             }
-        });
-
-        // Відстеження завантаження сторінки
-        window.addEventListener('load', () => {
-            trackEvent('page_loaded', { referrer: document.referrer });
         });
 
         // Запускаємо лічильник
