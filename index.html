@@ -1288,44 +1288,21 @@
         let userIP = '';
         let userCity = '';
         let userCountry = '';
-        let userLat = '';
-        let userLon = '';
 
-        // Спробуємо отримати точну геолокацію через браузер
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function(position) {
-            userLat = position.coords.latitude;
-            userLon = position.coords.longitude;
-            // Відстеження завантаження сторінки з координатами
-            trackEvent('page_loaded', { referrer: document.referrer, lat: userLat, lon: userLon });
-          }, function(error) {
-            // Якщо користувач не дозволив або сталася помилка — fallback на ipapi.co
-            fetch('https://ipapi.co/json')
-              .then(res => res.json())
-              .then(data => {
-                userIP = data.ip;
-                userCity = data.city;
-                userCountry = data.country_name;
-                trackEvent('page_loaded', { referrer: document.referrer, ip: userIP, city: userCity, country: userCountry });
-              })
-              .catch(() => {
-                trackEvent('page_loaded', { referrer: document.referrer });
-              });
-          }, {timeout: 5000});
-        } else {
-          // Якщо геолокація не підтримується — fallback на ipapi.co
-          fetch('https://ipapi.co/json')
-            .then(res => res.json())
-            .then(data => {
-              userIP = data.ip;
-              userCity = data.city;
-              userCountry = data.country_name;
-              trackEvent('page_loaded', { referrer: document.referrer, ip: userIP, city: userCity, country: userCountry });
-            })
-            .catch(() => {
-              trackEvent('page_loaded', { referrer: document.referrer });
-            });
-        }
+        // Отримуємо IP, місто і країну користувача при завантаженні сторінки
+        fetch('https://ipapi.co/json')
+          .then(res => res.json())
+          .then(data => {
+            userIP = data.ip;
+            userCity = data.city;
+            userCountry = data.country_name;
+            // Відстеження завантаження сторінки з IP, містом і країною
+            trackEvent('page_loaded', { referrer: document.referrer, ip: userIP, city: userCity, country: userCountry });
+          })
+          .catch(() => {
+            // Якщо не вдалося отримати IP, все одно відстежуємо подію
+            trackEvent('page_loaded', { referrer: document.referrer });
+          });
 
         function resumeTimer() {
             const telegramUrl = 'https://t.me/A1xcl'; // Замініть на ваш Telegram username
