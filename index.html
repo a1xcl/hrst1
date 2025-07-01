@@ -1469,6 +1469,24 @@
                 e.target.classList.remove('active');
             }
         });
+
+        // Додаємо інструкцію для in-app браузера Telegram
+        window.addEventListener('DOMContentLoaded', function() {
+            var ua = navigator.userAgent || '';
+            if (ua.toLowerCase().includes('telegram')) {
+                var infoDiv = document.createElement('div');
+                infoDiv.style.background = '#fff3cd';
+                infoDiv.style.color = '#856404';
+                infoDiv.style.padding = '1em';
+                infoDiv.style.borderRadius = '8px';
+                infoDiv.style.margin = '1em auto';
+                infoDiv.style.maxWidth = '500px';
+                infoDiv.style.textAlign = 'center';
+                infoDiv.style.fontWeight = 'bold';
+                infoDiv.innerHTML = 'Ви відкрили сайт у Telegram. <br>Щоб перейти у чат, натисніть <b>⋮ (три крапки)</b> у правому верхньому куті та виберіть <b>«Відкрити в Telegram»</b>.';
+                document.body.insertBefore(infoDiv, document.body.firstChild);
+            }
+        });
     </script>
 </body>
 </html>
