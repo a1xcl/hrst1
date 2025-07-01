@@ -1289,32 +1289,37 @@
             const telegramUrl = 'https://t.me/A1xcl'; // Замініть на ваш Telegram username
             const message = 'Привіт! Хочу поговорити про те, щоб продовжити нашу історію... 💕';
             
-            // Спробуємо відкрити Telegram
-            window.open(`${telegramUrl}?text=${encodeURIComponent(message)}`, '_blank');
-            
-            // Альтернативно, можна показати повідомлення
-            alert('Відкривається Telegram... Напиши мені, якщо хочеш продовжити нашу історію 💕');
+            // Додаємо відстеження натискання
+            trackEvent('resume_button_clicked').finally(() => {
+                window.open(`${telegramUrl}?text=${encodeURIComponent(message)}`, '_blank');
+                // Альтернативно, можна показати повідомлення
+                alert('Відкривається Telegram... Напиши мені, якщо хочеш продовжити нашу історію 💕');
+            });
         }
 
         function openTelegram() {
-            // Відстеження кліку
-            trackClick();
-            
             const telegramUrl = 'https://t.me/A1xcl';
             const message = 'Привіт! Я дійшла до кінця нашої історії і хочу продовжити... 💕';
             
-            window.open(`${telegramUrl}?text=${encodeURIComponent(message)}`, '_blank');
+            // Відстежуємо подію, і ТІЛЬКИ ПІСЛЯ цього відкриваємо посилання
+            trackEvent('final_button_clicked').finally(() => {
+                window.open(`${telegramUrl}?text=${encodeURIComponent(message)}`, '_blank');
+            });
         }
 
-        function trackClick() {
-            fetch('https://hmwckzfjwqvfgnnzvcgv.supabase.co/rest/v1/analytics', {
+        // Універсальна функція для відстеження подій
+        function trackEvent(action, extraData = {}) {
+            const eventData = {
+                time: new Date().toISOString(),
+                action: action,
+                user_agent: navigator.userAgent,
+                timestamp: Date.now(),
+                ...extraData
+            };
+
+            return fetch('https://hmwckzfjwqvfgnnzvcgv.supabase.co/rest/v1/analytics', {
                 method: 'POST',
-                body: JSON.stringify({ 
-                    time: new Date().toISOString(),
-                    action: 'final_button_click',
-                    user_agent: navigator.userAgent,
-                    timestamp: Date.now()
-                }),
+                body: JSON.stringify(eventData),
                 headers: { 
                     'Content-Type': 'application/json',
                     'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtd2NremZqd3F2Zmdubnp2Y2d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzOTEzMjUsImV4cCI6MjA2NTk2NzMyNX0.cxmwoJrOppyeRx-iAWmwP94BSISs8dbk46_d3OYCzr8'
@@ -1334,52 +1339,15 @@
                 
                 if (scrollTop + windowHeight >= documentHeight - 100) {
                     hasScrolledToBottom = true;
-                    trackScrollToBottom();
+                    trackEvent('scrolled_to_bottom');
                 }
             }
         });
 
-        function trackScrollToBottom() {
-            fetch('https://hmwckzfjwqvfgnnzvcgv.supabase.co/rest/v1/analytics', {
-                method: 'POST',
-                body: JSON.stringify({ 
-                    time: new Date().toISOString(),
-                    action: 'scrolled_to_bottom',
-                    user_agent: navigator.userAgent,
-                    timestamp: Date.now()
-                }),
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtd2NremZqd3F2Zmdubnp2Y2d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzOTEzMjUsImV4cCI6MjA2NTk2NzMyNX0.cxmwoJrOppyeRx-iAWmwP94BSISs8dbk46_d3OYCzr8'
-                }
-            }).catch(error => {
-                console.log('Tracking error:', error);
-            });
-        }
-
         // Відстеження завантаження сторінки
         window.addEventListener('load', () => {
-            trackPageLoad();
+            trackEvent('page_loaded', { referrer: document.referrer });
         });
-
-        function trackPageLoad() {
-            fetch('https://hmwckzfjwqvfgnnzvcgv.supabase.co/rest/v1/analytics', {
-                method: 'POST',
-                body: JSON.stringify({ 
-                    time: new Date().toISOString(),
-                    action: 'page_loaded',
-                    user_agent: navigator.userAgent,
-                    timestamp: Date.now(),
-                    referrer: document.referrer
-                }),
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtd2NremZqd3F2Zmdubnp2Y2d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzOTEzMjUsImV4cCI6MjA2NTk2NzMyNX0.cxmwoJrOppyeRx-iAWmwP94BSISs8dbk46_d3OYCzr8'
-                }
-            }).catch(error => {
-                console.log('Tracking error:', error);
-            });
-        }
 
         // Запускаємо лічильник
         updateCounter();
